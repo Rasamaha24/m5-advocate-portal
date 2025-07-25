@@ -55,6 +55,12 @@ A comprehensive guide for beginners to understand, customize, and maintain the M
 - **Lucide React**: Beautiful icon library
 - **Radix UI**: Accessible component primitives
 
+### Backend & Database
+- **Supabase**: Complete backend solution with PostgreSQL database
+- **Authentication**: Built-in user management and authentication
+- **Real-time**: Live data synchronization capabilities
+- **Storage**: File upload and management system
+
 ## Project Structure
 
 ```
@@ -70,6 +76,10 @@ src/
 │   ├── About.tsx          # About page
 │   ├── Contact.tsx        # Contact page
 │   └── Login.tsx          # Login page
+├── integrations/           # External service integrations
+│   └── supabase/          # Supabase configuration and types
+│       ├── client.ts      # Supabase client setup
+│       └── types.ts       # Auto-generated database types
 ├── assets/                 # Images and static files
 ├── lib/                    # Utility functions
 ├── hooks/                  # Custom React hooks
@@ -83,6 +93,8 @@ src/
 - `tailwind.config.ts` - Tailwind configuration
 - `src/components/Navigation.tsx` - Main navigation
 - `src/pages/Home.tsx` - Homepage content
+- `src/integrations/supabase/client.ts` - Supabase client configuration
+- `supabase/config.toml` - Supabase project configuration
 
 ## Making Your First Edit
 

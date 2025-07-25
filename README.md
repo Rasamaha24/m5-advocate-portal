@@ -59,6 +59,33 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (Backend & Authentication)
+
+## Supabase Integration
+
+This project is connected to Supabase for backend functionality:
+
+**Project Details:**
+- Project ID: `iueunzrkmotewirixdef`
+- Project Name: `Rasamaha24's Project`
+- Configuration: Located in `supabase/config.toml`
+
+**Features Available:**
+- User authentication (sign up/login)
+- Database operations with Row Level Security
+- Real-time subscriptions
+- File storage capabilities
+- Edge functions for serverless backend logic
+
+**Getting Started with Supabase:**
+1. The Supabase client is pre-configured in `src/integrations/supabase/client.ts`
+2. Database types are auto-generated in `src/integrations/supabase/types.ts`
+3. Use the client in your components: `import { supabase } from "@/integrations/supabase/client"`
+
+**Database Management:**
+- View your database: [Supabase Dashboard](https://supabase.com/dashboard/project/iueunzrkmotewirixdef)
+- SQL Editor: [SQL Editor](https://supabase.com/dashboard/project/iueunzrkmotewirixdef/sql/new)
+- Authentication Settings: [Auth Settings](https://supabase.com/dashboard/project/iueunzrkmotewirixdef/auth/providers)
 
 ## How can I deploy this project?
 
