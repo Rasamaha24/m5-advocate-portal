@@ -36,7 +36,7 @@ const Login = () => {
     });
     // Simulate redirect to dashboard
     setTimeout(() => {
-      window.location.href = '/dashboard'; // In real app, use React Router
+      window.location.href = '/dashboard';
     }, 1000);
   };
 
@@ -58,7 +58,7 @@ const Login = () => {
     });
     // Simulate redirect to dashboard setup
     setTimeout(() => {
-      window.location.href = '/dashboard'; // In real app, use React Router
+      window.location.href = '/dashboard';
     }, 1000);
   };
 
