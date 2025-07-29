@@ -375,34 +375,15 @@ const Dashboard = () => {
               </div>
 
               <Card>
-                <CardContent className="p-6">
-                  <div className="text-center py-12">
-                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Embedded Notion Tracker
-                    </h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Your comprehensive legislative tracking dashboard would be embedded here, pulling real-time data from the Texas Legislature and organizing it by client.
-                    </p>
-                    <div className="space-y-4">
-                      <div className="bg-accent/50 rounded-lg p-4 border border-border">
-                        <h4 className="font-medium text-foreground mb-2">🏛️ Texas Legislature Integration</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Real-time bill text updates, committee schedules, voting records, and amendment tracking
-                        </p>
-                      </div>
-                      <div className="bg-accent/50 rounded-lg p-4 border border-border">
-                        <h4 className="font-medium text-foreground mb-2">📊 Client-Specific Views</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Filtered dashboards showing only relevant legislation for each client's interests
-                        </p>
-                      </div>
-                    </div>
-                    <Button className="mt-6" variant="outline">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open Full Tracker
-                    </Button>
-                  </div>
+                <CardContent className="p-0">
+                  <iframe 
+                    src="https://carnation-yoke-a1d.notion.site/ebd/23a84e95344c80d095d2cbba2ac853e3" 
+                    width="100%" 
+                    height="600" 
+                    frameBorder="0" 
+                    allowFullScreen
+                    className="rounded-lg"
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
