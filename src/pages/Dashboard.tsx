@@ -325,43 +325,18 @@ const Dashboard = () => {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {clients.map((client) => (
-                  <Card key={client.id} className="hover:shadow-medium transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold text-foreground">{client.name}</h3>
-                          <p className="text-sm text-muted-foreground">Last update: {client.lastUpdate}</p>
-                        </div>
-                        <Badge className={getStatusColor(client.status)}>{client.status}</Badge>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Bills Tracked:</span>
-                          <span className="font-medium">{client.bills}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Priority:</span>
-                          <Badge className={getPriorityColor(client.priority)}>{client.priority}</Badge>
-                        </div>
-                      </div>
-
-                      <div className="flex space-x-2 mt-4">
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          Portal
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Card>
+                <CardContent className="p-0">
+                  <iframe 
+                    src="https://carnation-yoke-a1d.notion.site/ebd/23a84e95344c814a83e9dee7260124df" 
+                    width="100%" 
+                    height="600" 
+                    frameBorder="0" 
+                    allowFullScreen
+                    className="rounded-lg"
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Legislation Tab */}
@@ -377,7 +352,7 @@ const Dashboard = () => {
               <Card>
                 <CardContent className="p-0">
                   <iframe 
-                    src="https://carnation-yoke-a1d.notion.site/ebd/23a84e95344c80d095d2cbba2ac853e3" 
+                    src="https://carnation-yoke-a1d.notion.site/ebd/23e84e95344c81f49567e963358f578c?v=23e84e95344c81a0a61c000c9822e328" 
                     width="100%" 
                     height="600" 
                     frameBorder="0" 
