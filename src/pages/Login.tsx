@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,8 @@ import Footer from '@/components/Footer';
 import { Mail, Lock, User, Building, ArrowRight, Shield, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -25,23 +28,75 @@ const Login = () => {
     confirmPassword: ''
   });
 
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would authenticate with your backend
-    toast({
-      title: "Login successful!",
-      description: "Redirecting to your dashboard...",
+  // Check for existing session and set up auth listener
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          navigate('/dashboard');
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        navigate('/dashboard');
+      }
     });
-    // Simulate redirect to dashboard
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      });
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Login successful!",
+          description: "Redirecting to your dashboard...",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (signupData.password !== signupData.confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -50,16 +105,43 @@ const Login = () => {
       });
       return;
     }
-    
-    // In a real app, this would create an account
-    toast({
-      title: "Account created!",
-      description: "Welcome to M5 Solutions. Setting up your dashboard...",
-    });
-    // Simulate redirect to dashboard setup
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: signupData.name,
+            company: signupData.company,
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Please check your email to confirm your account.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Signup failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const benefits = [
@@ -177,8 +259,8 @@ const Login = () => {
                         </a>
                       </div>
 
-                      <Button type="submit" className="w-full bg-gradient-primary">
-                        Sign In
+                      <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
+                        {loading ? "Signing in..." : "Sign In"}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </form>
@@ -267,8 +349,8 @@ const Login = () => {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full bg-gradient-primary">
-                        Create Account
+                      <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
+                        {loading ? "Creating Account..." : "Create Account"}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
 

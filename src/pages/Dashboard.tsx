@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/hooks/useAuth';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { 
   BarChart3, 
   FileText, 
@@ -18,98 +23,51 @@ import {
   CheckCircle,
   ArrowRight,
   Download,
-  Eye
+  Eye,
+  LogOut
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const [notifications] = useState([
-    {
-      id: 1,
-      type: 'urgent',
-      title: 'SB 150 - Committee Hearing Scheduled',
-      message: 'Your tracked bill has a hearing scheduled for tomorrow at 2:00 PM',
-      time: '2 hours ago',
-      client: 'Austin Energy'
-    },
-    {
-      id: 2,
-      type: 'update',
-      title: 'HB 2347 - Bill Text Updated',
-      message: 'Amendment filed affecting Section 3.2 of your tracked legislation',
-      time: '4 hours ago',
-      client: 'Texas Municipal League'
-    },
-    {
-      id: 3,
-      type: 'success',
-      title: 'Weekly Report Generated',
-      message: 'Your client report for Texas Association of Realtors is ready for review',
-      time: '1 day ago',
-      client: 'Texas Association of Realtors'
-    }
-  ]);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { bills, clients, notifications, loading, error, markNotificationAsRead } = useDashboardData();
 
-  const [clients] = useState([
-    {
-      id: 1,
-      name: 'Austin Energy',
-      bills: 12,
-      status: 'active',
-      lastUpdate: '2 hours ago',
-      priority: 'high'
-    },
-    {
-      id: 2,
-      name: 'Texas Municipal League',
-      bills: 8,
-      status: 'active',
-      lastUpdate: '4 hours ago',
-      priority: 'medium'
-    },
-    {
-      id: 3,
-      name: 'Texas Association of Realtors',
-      bills: 15,
-      status: 'active',
-      lastUpdate: '1 day ago',
-      priority: 'high'
-    },
-    {
-      id: 4,
-      name: 'Houston Chamber of Commerce',
-      bills: 6,
-      status: 'review',
-      lastUpdate: '2 days ago',
-      priority: 'low'
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
     }
-  ]);
+  }, [user, authLoading, navigate]);
 
-  const [recentBills] = useState([
-    {
-      id: 'SB150',
-      title: 'Municipal Utility District Reform Act',
-      status: 'committee',
-      client: 'Austin Energy',
-      priority: 'high',
-      nextAction: 'Committee Hearing - Tomorrow 2:00 PM'
-    },
-    {
-      id: 'HB2347',
-      title: 'Real Estate Commission Modernization',
-      status: 'pending',
-      client: 'Texas Association of Realtors',
-      priority: 'high',
-      nextAction: 'Floor Vote - Next Week'
-    },
-    {
-      id: 'HB1892',
-      title: 'Local Government Transparency Requirements',
-      status: 'filed',
-      client: 'Texas Municipal League',
-      priority: 'medium',
-      nextAction: 'Committee Assignment Pending'
-    }
-  ]);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  // Show loading skeleton while auth is loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -154,7 +112,11 @@ const Dashboard = () => {
               </Button>
               <Button className="bg-gradient-primary">
                 <Bell className="h-4 w-4 mr-2" />
-                Notifications (3)
+                Notifications ({notifications.filter(n => !n.read).length})
+              </Button>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -181,10 +143,12 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Active Clients</p>
-                        <p className="text-2xl font-bold text-foreground">12</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {loading ? <Skeleton className="h-8 w-8" /> : clients.length}
+                        </p>
                         <p className="text-xs text-green-600 flex items-center mt-1">
                           <TrendingUp className="h-3 w-3 mr-1" />
-                          +2 this month
+                          Active accounts
                         </p>
                       </div>
                       <Users className="h-8 w-8 text-primary" />
@@ -197,10 +161,12 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Bills Tracked</p>
-                        <p className="text-2xl font-bold text-foreground">41</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {loading ? <Skeleton className="h-8 w-8" /> : bills.length}
+                        </p>
                         <p className="text-xs text-blue-600 flex items-center mt-1">
                           <FileText className="h-3 w-3 mr-1" />
-                          3 new today
+                          Current session
                         </p>
                       </div>
                       <BarChart3 className="h-8 w-8 text-primary" />
@@ -212,11 +178,13 @@ const Dashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Urgent Actions</p>
-                        <p className="text-2xl font-bold text-foreground">5</p>
+                        <p className="text-sm text-muted-foreground">Unread Notifications</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {loading ? <Skeleton className="h-8 w-8" /> : notifications.filter(n => !n.read).length}
+                        </p>
                         <p className="text-xs text-orange-600 flex items-center mt-1">
                           <AlertCircle className="h-3 w-3 mr-1" />
-                          2 due today
+                          Needs attention
                         </p>
                       </div>
                       <Bell className="h-8 w-8 text-primary" />
@@ -228,11 +196,16 @@ const Dashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Reports Generated</p>
-                        <p className="text-2xl font-bold text-foreground">28</p>
+                        <p className="text-sm text-muted-foreground">High Priority Bills</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {loading ? <Skeleton className="h-8 w-8" /> : bills.filter(b => 
+                            (b.client_bills.priority_override || b.priority) === 'high' || 
+                            (b.client_bills.priority_override || b.priority) === 'critical'
+                          ).length}
+                        </p>
                         <p className="text-xs text-green-600 flex items-center mt-1">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          All delivered
+                          Actively monitored
                         </p>
                       </div>
                       <FileText className="h-8 w-8 text-primary" />
@@ -260,10 +233,14 @@ const Dashboard = () => {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground">{notification.title}</p>
                           <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            <Badge variant="outline" className="text-xs">{notification.client}</Badge>
-                            <span className="text-xs text-muted-foreground">{notification.time}</span>
-                          </div>
+                           <div className="flex items-center justify-between mt-2">
+                             {notification.bills && (
+                               <Badge variant="outline" className="text-xs">{notification.bills.bill_number}</Badge>
+                             )}
+                             <span className="text-xs text-muted-foreground">
+                               {new Date(notification.created_at).toLocaleDateString()}
+                             </span>
+                           </div>
                         </div>
                       </div>
                     ))}
@@ -283,29 +260,42 @@ const Dashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {recentBills.map((bill) => (
-                      <div key={bill.id} className="p-3 rounded-lg border border-border">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Badge variant="outline">{bill.id}</Badge>
-                              <Badge className={getPriorityColor(bill.priority)}>{bill.priority}</Badge>
+                    {loading ? (
+                      [...Array(3)].map((_, i) => (
+                        <Skeleton key={i} className="h-24 w-full" />
+                      ))
+                    ) : error ? (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    ) : (
+                      bills.slice(0, 3).map((bill) => (
+                        <div key={bill.id} className="p-3 rounded-lg border border-border">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Badge variant="outline">{bill.bill_number}</Badge>
+                                <Badge className={getPriorityColor(bill.client_bills.priority_override || bill.priority)}>
+                                  {bill.client_bills.priority_override || bill.priority}
+                                </Badge>
+                              </div>
+                              <p className="text-sm font-medium text-foreground">{bill.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{bill.summary}</p>
                             </div>
-                            <p className="text-sm font-medium text-foreground">{bill.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{bill.client}</p>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-border">
-                          <div className="flex items-center justify-between">
-                            <Badge className={getStatusColor(bill.status)}>{bill.status}</Badge>
-                            <span className="text-xs text-muted-foreground">{bill.nextAction}</span>
+                          <div className="mt-3 pt-3 border-t border-border">
+                            <div className="flex items-center justify-between">
+                              <Badge className={getStatusColor(bill.status)}>{bill.status}</Badge>
+                              <span className="text-xs text-muted-foreground">{bill.last_action || 'No recent action'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                     <Button variant="outline" className="w-full">
                       View All Bills
                       <ArrowRight className="h-4 w-4 ml-2" />
