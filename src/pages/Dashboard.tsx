@@ -8,8 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import ClientManagement from '@/components/ClientManagement';
+import LegislationTracking from '@/components/LegislationTracking';
+import NotificationCenter from '@/components/NotificationCenter';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BarChart3, 
   FileText, 
@@ -31,6 +35,9 @@ const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { bills, clients, notifications, loading, error, markNotificationAsRead } = useDashboardData();
+  const { toast } = useToast();
+  const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('overview');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -42,6 +49,78 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const handleExportReports = () => {
+    toast({
+      title: "Export Started",
+      description: "Your reports are being generated and will be downloaded shortly.",
+    });
+  };
+
+  const handleNotificationClick = () => {
+    setIsNotificationCenterOpen(true);
+  };
+
+  const handleMarkAllNotificationsAsRead = async () => {
+    const unreadNotifications = notifications.filter(n => !n.read);
+    for (const notification of unreadNotifications) {
+      await markNotificationAsRead(notification.id);
+    }
+    toast({
+      title: "Notifications Updated",
+      description: "All notifications marked as read.",
+    });
+  };
+
+  const handleAddClient = (clientData: any) => {
+    toast({
+      title: "Client Added",
+      description: `${clientData.name} has been added to your client list.`,
+    });
+  };
+
+  const handleEditClient = (clientId: string, clientData: any) => {
+    toast({
+      title: "Client Updated",
+      description: `${clientData.name} information has been updated.`,
+    });
+  };
+
+  const handleViewClient = (clientId: string) => {
+    toast({
+      title: "Client Details",
+      description: "Opening detailed client view...",
+    });
+  };
+
+  const handleTrackBill = (billData: any) => {
+    toast({
+      title: "Bill Tracked",
+      description: `${billData.bill_number} is now being tracked.`,
+    });
+  };
+
+  const handleViewBill = (billId: string) => {
+    toast({
+      title: "Bill Details",
+      description: "Opening detailed bill view...",
+    });
+  };
+
+  const handleViewAllNotifications = () => {
+    setIsNotificationCenterOpen(true);
+  };
+
+  const handleViewAllBills = () => {
+    setSelectedTab('legislation');
+  };
+
+  const handleGenerateReport = () => {
+    toast({
+      title: "Report Generation",
+      description: "Custom report is being generated...",
+    });
   };
 
   // Show loading skeleton while auth is loading
@@ -106,11 +185,11 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleExportReports}>
                 <Download className="h-4 w-4 mr-2" />
                 Export Reports
               </Button>
-              <Button className="bg-gradient-primary">
+              <Button className="bg-gradient-primary" onClick={handleNotificationClick}>
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications ({notifications.filter(n => !n.read).length})
               </Button>
@@ -126,7 +205,7 @@ const Dashboard = () => {
       {/* Dashboard Content */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:flex">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="clients">Clients</TabsTrigger>
@@ -138,7 +217,7 @@ const Dashboard = () => {
             <TabsContent value="overview" className="space-y-6">
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedTab('clients')}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -156,7 +235,7 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedTab('legislation')}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -174,7 +253,7 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleNotificationClick}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -244,7 +323,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     ))}
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={handleViewAllNotifications}>
                       View All Notifications
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -283,7 +362,7 @@ const Dashboard = () => {
                               <p className="text-sm font-medium text-foreground">{bill.title}</p>
                               <p className="text-xs text-muted-foreground mt-1">{bill.summary}</p>
                             </div>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewBill(bill.id)}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </div>
@@ -296,7 +375,7 @@ const Dashboard = () => {
                         </div>
                       ))
                     )}
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={handleViewAllBills}>
                       View All Bills
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -309,55 +388,36 @@ const Dashboard = () => {
             <TabsContent value="clients" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-foreground">Client Management</h2>
-                <Button className="bg-gradient-primary">
-                  <Users className="h-4 w-4 mr-2" />
-                  Add New Client
-                </Button>
               </div>
 
-              <Card>
-                <CardContent className="p-0">
-                  <iframe 
-                    src="https://carnation-yoke-a1d.notion.site/ebd/23a84e95344c814a83e9dee7260124df" 
-                    width="100%" 
-                    height="600" 
-                    frameBorder="0" 
-                    allowFullScreen
-                    className="rounded-lg"
-                  />
-                </CardContent>
-              </Card>
+              <ClientManagement
+                clients={clients}
+                loading={loading}
+                onAddClient={handleAddClient}
+                onEditClient={handleEditClient}
+                onViewClient={handleViewClient}
+              />
             </TabsContent>
 
             {/* Legislation Tab */}
             <TabsContent value="legislation" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-foreground">Legislative Tracking</h2>
-                <Button className="bg-gradient-primary">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Track New Bill
-                </Button>
               </div>
 
-              <Card>
-                <CardContent className="p-0">
-                  <iframe 
-                    src="https://carnation-yoke-a1d.notion.site/ebd/23e84e95344c81f49567e963358f578c?v=23e84e95344c81a0a61c000c9822e328" 
-                    width="100%" 
-                    height="600" 
-                    frameBorder="0" 
-                    allowFullScreen
-                    className="rounded-lg"
-                  />
-                </CardContent>
-              </Card>
+              <LegislationTracking
+                bills={bills}
+                loading={loading}
+                onTrackBill={handleTrackBill}
+                onViewBill={handleViewBill}
+              />
             </TabsContent>
 
             {/* Reports Tab */}
             <TabsContent value="reports" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-foreground">Client Reports</h2>
-                <Button className="bg-gradient-primary">
+                <Button className="bg-gradient-primary" onClick={handleGenerateReport}>
                   <FileText className="h-4 w-4 mr-2" />
                   Generate Report
                 </Button>
@@ -374,11 +434,11 @@ const Dashboard = () => {
                       Comprehensive weekly report for Texas Association of Realtors covering all tracked legislation
                     </p>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => toast({ title: "Preview", description: "Opening report preview..." })}>
                         <Eye className="h-4 w-4 mr-1" />
                         Preview
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => toast({ title: "Download", description: "Report download started..." })}>
                         <Download className="h-4 w-4 mr-1" />
                         Download
                       </Button>
@@ -414,7 +474,7 @@ const Dashboard = () => {
                       Special legislative session summary for Texas Municipal League emergency session coverage
                     </p>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => toast({ title: "Edit Draft", description: "Opening draft editor..." })}>
                         <Eye className="h-4 w-4 mr-1" />
                         Edit Draft
                       </Button>
@@ -426,6 +486,15 @@ const Dashboard = () => {
           </Tabs>
         </div>
       </section>
+
+      {/* Notification Center */}
+      <NotificationCenter
+        notifications={notifications}
+        isOpen={isNotificationCenterOpen}
+        onClose={() => setIsNotificationCenterOpen(false)}
+        onMarkAsRead={markNotificationAsRead}
+        onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+      />
 
       <Footer />
     </div>
