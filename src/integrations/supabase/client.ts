@@ -5,6 +5,11 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://iueunzrkmotewirixdef.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1ZXVuenJrbW90ZXdpcml4ZGVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NjIyODgsImV4cCI6MjA2OTAzODI4OH0.ycOK535lhWprHhxZ_GSgUR0dhwQLkB0wdagsHprhQqw";
 
+// Add error handling for missing environment variables
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('Missing Supabase configuration. Please check your environment variables.');
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
