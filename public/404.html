@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting...</title>
+    <meta name="robots" content="noindex" />
+    <script>
+      (function() {
+        var l = window.location;
+        var base = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
+        var target = '/?p=' + encodeURIComponent(l.pathname + l.search + l.hash);
+        l.replace(base + target);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
